@@ -219,17 +219,139 @@ Potential improvements include adding dedicated error branches, validation steps
 
 ## 📸 Workflow Screenshots
 
-Include screenshots showing the n8n workflow and important sections of the automation.
+The screenshots below show the complete n8n automation, from sales data retrieval and order processing to Operations fulfillment, Finance analysis, and Management reporting.
 
-Recommended screenshots:
+All screenshots are stored in:
 
-1. **Complete workflow** — showing the overall process and branching.
-2. **Sales data processing** — HTTP Request, Split Orders, and Set Order Totals.
-3. **Operations branch** — Aggregate Orders and the Operations delivery step.
-4. **Finance branch** — Filter Delivered, Ignore Not Delivered, regional summarization, and branching logic.
-5. **Management reporting branch** — Report Metadata, CSV conversion, and report delivery.
+`docs/screenshots/`
 
-When taking the screenshots, make sure the workflow structure is clearly visible and any sensitive information such as API keys, credentials, personal information, or private URLs is hidden.
+---
+
+### 1. Workflow Overview
+
+**Screenshot path:**
+
+`docs/screenshots/01-workflow-overview.png`
+
+![Workflow Overview](https://github.com/n8n-tin/n8n-sales-order-revenue-automation/blob/main/docs/screenshots/01%20%E2%80%94%20workflow-overview.png)
+
+The complete workflow showing the main processing flow and the branches for Operations, Finance, and Management reporting.
+
+---
+
+### 2. Data Retrieval & Order Processing
+
+**Screenshot path:**
+
+`docs/screenshots/02-data-retrieval-and-order-processing.png`
+
+![Data Retrieval and Order Processing](https://github.com/n8n-tin/n8n-sales-order-revenue-automation/blob/main/docs/screenshots/02%20%E2%80%94%20data-retrieval-and-order-processing.png)
+
+This section shows:
+
+* Manual Trigger
+* HTTP Request — Get Sales Data
+* Split Orders
+* Set Order Totals
+
+The workflow retrieves the sales data, separates individual orders, and prepares the order totals for downstream processing.
+
+---
+
+### 3. Operations Fulfillment
+
+**Screenshot path:**
+
+`docs/screenshots/03-operations-fulfillment.png`
+
+![Operations Fulfillment](https://github.com/n8n-tin/n8n-sales-order-revenue-automation/blob/main/docs/screenshots/03%20%E2%80%94%20operations-fulfillment.png)
+
+
+This branch consolidates the processed orders and sends them to Operations for fulfillment.
+
+**Nodes included:**
+
+* Aggregate Orders
+* Send Orders to Operations
+
+---
+
+### 4. Regional Revenue Analysis
+
+**Screenshot path:**
+
+`docs/screenshots/04-regional-revenue-analysis.png`
+
+![Regional Revenue Analysis](https://github.com/n8n-tin/n8n-sales-order-revenue-automation/blob/main/docs/screenshots/04%20%E2%80%94%20regional-revenue-analysis.png)
+
+This branch removes non-delivered orders and analyzes delivered orders by region.
+
+**Nodes included:**
+
+* Ignore Not Delivered
+* Summarize by Region
+* Update Field Name
+
+The regional analysis calculates:
+
+* **Order Totals** — sum of order values
+* **Order Count** — number of delivered orders
+* **Average Order Total** — average order value
+
+The aggregated fields are then renamed to clear, business-friendly names for downstream reporting.
+
+---
+
+### 5. Finance Reporting
+
+**Screenshot path:**
+
+`docs/screenshots/05-finance-reporting.png`
+
+![Finance Reporting](https://github.com/n8n-tin/n8n-sales-order-revenue-automation/blob/main/docs/screenshots/05%20%E2%80%94%20finance-reporting.png)
+
+The regional results are consolidated and sent to Finance for revenue reporting and analysis.
+
+**Nodes included:**
+
+* Aggregate Regions
+* Send Analysis to Finance
+
+---
+
+### 6. Management Reporting
+
+**Screenshot path:**
+
+`docs/screenshots/06-management-reporting.png`
+
+![Management Reporting](https://github.com/n8n-tin/n8n-sales-order-revenue-automation/blob/main/docs/screenshots/06%20%E2%80%94%20management-reporting.png)
+
+The final reporting branch prepares the data for Management's weekly review.
+
+**Nodes included:**
+
+* Set Report Metadata
+* Convert to CSV
+* Send Report to Management
+
+The workflow adds a `report_generated` timestamp, converts the results into CSV format, and sends the completed report to Management.
+
+---
+
+### Screenshot Directory
+
+```text
+docs/
+└── screenshots/
+    ├── 01-workflow-overview.png
+    ├── 02-data-retrieval-and-order-processing.png
+    ├── 03-operations-fulfillment.png
+    ├── 04-regional-revenue-analysis.png
+    ├── 05-finance-reporting.png
+    └── 06-management-reporting.png
+```
+
 
 ## Testing
 
