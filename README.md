@@ -1,5 +1,6 @@
 # Sales Order Processing & Revenue Reporting Automation
 
+---
 ## Business Problem
 
 Sales order data often needs to be processed and distributed to different departments for fulfillment, financial reporting, and management review.
@@ -14,7 +15,8 @@ This can lead to:
 * Inconsistent calculations or formatting
 * Increased risk of human error
 * Delayed revenue visibility for Finance and Management
-
+  
+---
 ## Solution
 
 I built an automated sales order processing and reporting workflow using **n8n**.
@@ -34,48 +36,75 @@ The workflow automatically:
 9. Sends regional revenue analysis to Finance.
 10. Generates a CSV report for Management's weekly review.
 
+---
 ## Process Map
 
 ```text
-Manual Trigger
-      ↓
-HTTP Request — Get Sales Data
-      ↓
-Split Orders
-      ↓
-Set Order Totals
-      ↓
-      ├─────────────────────────────────┐
-  OPERATIONS                        REPORTING
-      ↓                                 ↓
-Aggregate Orders                  Filter Delivered
-      ↓                                 ↓
-Send Orders to Operations               ↓
-for Fulfillment                         ↓
-                                        ↓
-                              Delivered Branch (Yes / No)
-                                        ↓
-                           ┌────────────┴────────────┐
-                           ↓                         ↓
-                          YES                        NO
-                           ↓                         ↓
-                Summarize by Region          Exclude from Reporting
-                           ↓
-                  Update Field Name
-                           ↓
-                           ↓
-              ┌────────────┴────────────┐
-           FINANCE                 MANAGEMENT
-              ↓                         ↓
-  Aggregate Regions              Set Report Metadata
-              ↓                         ↓
-Send Analysis to Finance        Convert to CSV
-                                        ↓
-                             Send Report to Management
-                         
-               
+                         Sales Order Data
+                                ↓
+                        Manual Trigger
+                                ↓
+                   HTTP — Get Sales Data
+                                ↓
+                         Split Orders
+                                ↓
+                      Set Order Totals
+                                ↓
+                 ┌──────────────┴──────────────┐
+                 ↓                             ↓
+        OPERATIONS BRANCH              DELIVERY ANALYSIS
+                 ↓                             ↓
+        Aggregate Orders              Filter Delivered?
+                 ↓                         /        \
+      Send Orders to Operations          YES        NO
+          for Fulfillment                 ↓          ↓
+                                  Summarize by     Ignore
+                                     Region       Not Delivered
+                                         ↓
+                              ┌─────────────────────┐
+                              │ Regional Metrics:   │
+                              │ • Order Totals      │
+                              │ • Order Count       │
+                              │ • Average Order     │
+                              │   Total             │
+                              └─────────────────────┘
+                                         ↓
+                                  Update Field Name
+                                         ↓
+                              ┌──────────┴──────────┐
+                              ↓                     ↓
+                       FINANCE BRANCH       MANAGEMENT BRANCH
+                              ↓                     ↓
+                      Aggregate Regions    Set Report Metadata
+                              ↓                     ↓
+                    Send Analysis to       Convert to CSV
+                         Finance                  ↓
+                                           Send Report to
+                                            Management
 ```
 
+---
+### Process Summary
+
+The workflow retrieves sales order data, separates the orders, and prepares the order totals. The processed orders then support two business processes.
+
+**Operations:**
+Orders are aggregated and sent to the Operations department for fulfillment.
+
+**Delivery & Reporting:**
+The workflow checks whether each order has been delivered. Orders that meet the delivered condition continue to **Summarize by Region**, while orders that do not meet the condition are routed to **Ignore Not Delivered**.
+
+Delivered orders are summarized by region using three key metrics:
+
+* **Order Totals** — sum of order values
+* **Order Count** — number of delivered orders
+* **Average Order Total** — average order value
+
+The resulting fields are standardized by **Update Field Name** before the regional data is used for Finance and Management reporting.
+
+The Finance branch aggregates the regional results and sends the analysis to Finance. The Management branch adds a report generation timestamp, converts the results to CSV, and sends the report to Management for weekly review.
+
+---
 ## How the Workflow Works
 
 ### 1. Manual Trigger
@@ -98,7 +127,7 @@ The workflow calculates or sets the total value for each individual order and pr
 
 ### 5. Split into Operations and Reporting Processes
 
-After the order totals are prepared, the workflow branches into two separate business processes:
+After the order totals are prepared, the workflow branches into two separate business processes.
 
 #### Branch 1 — Operations / Fulfillment
 
@@ -110,19 +139,26 @@ The individual order records are consolidated into a structured dataset containi
 
 The consolidated order information is sent to the Operations department or fulfillment system for order processing and fulfillment.
 
-#### Branch 2 — Delivered Orders / Revenue Reporting
+#### Branch 2 — Delivery Status & Revenue Reporting
+
+**Filter Delivered**
+
+The workflow checks the delivery status of each order.
+
+* **Yes:** The delivered order continues to regional revenue analysis.
+* **No:** The order is routed to **Ignore Not Delivered** and does not continue to the revenue reporting process.
 
 **Ignore Not Delivered**
 
-The workflow filters out orders that have not been delivered. Only delivered orders continue to the regional revenue analysis and reporting process.
+Orders that do not meet the delivered condition are routed here and excluded from the regional revenue analysis.
 
 **Summarize by Region**
 
-The delivered orders are grouped by region and key performance metrics are calculated for each region:
+Delivered orders are grouped by region and key performance metrics are calculated for each region:
 
-* **Total order value** — sum of order totals
-* **Order count** — number of delivered orders
-* **Average order value** — average order total
+* **Order Totals** — sum of order totals
+* **Order Count** — number of delivered orders
+* **Average Order Total** — average order total
 
 This transforms individual delivered orders into regional performance data.
 
@@ -138,7 +174,7 @@ This makes the output easier to interpret and use in reports.
 
 ### 6. Split into Finance and Management Reporting
 
-The regional results are then distributed into two reporting processes.
+After the regional metrics are prepared and the field names are standardized, the results are distributed into two reporting processes.
 
 #### Branch 2A — Finance
 
@@ -183,8 +219,9 @@ Delivered orders → Regional metrics → Revenue analysis
 **3. Management:**
 Regional metrics → Timestamped CSV report → Weekly review
 
-The overall process demonstrates how a single sales dataset can be automatically transformed and routed to different departments according to their specific business requirements.
+The overall process demonstrates how a single sales dataset can be automatically transformed, analyzed, and routed to different departments according to their specific business requirements.
 
+---
 ## AI Capabilities
 
 This workflow is primarily a **business process and data automation workflow rather than an AI workflow**.
@@ -204,6 +241,7 @@ For example, an AI step could analyze the regional revenue results and generate:
 
 This would turn the workflow from a reporting automation into an **AI-assisted business intelligence workflow**.
 
+---
 ## Error Handling
 
 The workflow can be designed to handle common automation failures, including:
@@ -217,6 +255,7 @@ The workflow can be designed to handle common automation failures, including:
 
 Potential improvements include adding dedicated error branches, validation steps, and failure notifications to alert the appropriate team when processing fails.
 
+---
 ## 📸 Workflow Screenshots
 
 The screenshots below show the complete n8n automation, from sales data retrieval and order processing to Operations fulfillment, Finance analysis, and Management reporting.
@@ -225,8 +264,8 @@ All screenshots are stored in:
 
 `docs/screenshots/`
 
----
 
+---
 ### 1. Workflow Overview
 
 **Screenshot path:**
@@ -237,8 +276,8 @@ All screenshots are stored in:
 
 The complete workflow showing the main processing flow and the branches for Operations, Finance, and Management reporting.
 
----
 
+---
 ### 2. Data Retrieval & Order Processing
 
 **Screenshot path:**
@@ -256,8 +295,8 @@ This section shows:
 
 The workflow retrieves the sales data, separates individual orders, and prepares the order totals for downstream processing.
 
----
 
+---
 ### 3. Operations Fulfillment
 
 **Screenshot path:**
@@ -274,8 +313,8 @@ This branch consolidates the processed orders and sends them to Operations for f
 * Aggregate Orders
 * Send Orders to Operations
 
----
 
+---
 ### 4. Regional Revenue Analysis
 
 **Screenshot path:**
@@ -300,8 +339,8 @@ The regional analysis calculates:
 
 The aggregated fields are then renamed to clear, business-friendly names for downstream reporting.
 
----
 
+---
 ### 5. Finance Reporting
 
 **Screenshot path:**
@@ -317,8 +356,8 @@ The regional results are consolidated and sent to Finance for revenue reporting 
 * Aggregate Regions
 * Send Analysis to Finance
 
----
 
+---
 ### 6. Management Reporting
 
 **Screenshot path:**
@@ -337,8 +376,8 @@ The final reporting branch prepares the data for Management's weekly review.
 
 The workflow adds a `report_generated` timestamp, converts the results into CSV format, and sends the completed report to Management.
 
----
 
+---
 ### Screenshot Directory
 
 ```text
@@ -352,7 +391,7 @@ docs/
     └── 06-management-reporting.png
 ```
 
-
+---
 ## Testing
 
 The workflow was tested by running the automation with sales order data and verifying that:
@@ -368,6 +407,7 @@ The workflow was tested by running the automation with sales order data and veri
 * The final report was converted into CSV format.
 * The management report was prepared for weekly review.
 
+---
 ## Technology Stack
 
 * **n8n** — Workflow automation
@@ -379,6 +419,7 @@ The workflow was tested by running the automation with sales order data and veri
 * **Email/Business communication** — Department reporting
 * **AI-ready architecture** — Can be extended with AI analysis and reporting
 
+---
 ## Business Value
 
 This automation demonstrates how repetitive sales operations and reporting processes can be converted into a structured workflow.
@@ -395,6 +436,7 @@ Potential business benefits include:
 
 The project demonstrates practical knowledge of **workflow automation, data transformation, branching logic, API integration, aggregation, reporting, and cross-department process automation**.
 
+---
 ## Future Improvements
 
 Future versions could include:
@@ -410,6 +452,7 @@ Future versions could include:
 * Connect the workflow to SAP or another ERP system.
 * Add automated alerts for high-value or delayed orders.
 
+---
 ## Project Outcome
 
 This project demonstrates how n8n can be used to automate a complete business process from **data retrieval → order processing → operational fulfillment → financial analysis → management reporting**.
